@@ -1,0 +1,32 @@
+diff -ruN mailing-list-old/ml.py mailing-list/ml.py
+--- mailing-list-old/ml.py	2010-10-12 00:57:14.000000000 -0400
++++ mailing-list/ml.py	2010-11-24 11:52:59.000000000 -0500
+@@ -54,16 +54,19 @@
+              estudiante.PrimerApellido, estudiante.SegundoApellido)
+         unicode_cn = unicode_cn.replace("   ", " ").replace(" - ", " ")
+         cn = unicode_cn.encode("ascii", "replace").replace("?", "*")
+-        id = ldap.search("", SCOPE_SUBTREE, "cn=%s" % cn, ["mail"])
+-        st, data = ldap.result(id, 10)
+-        if len(data) < 1:
++        try:
++            id = ldap.search("", SCOPE_SUBTREE, "cn=%s" % cn, ["mail"])
++            st, data = ldap.result(id, 10)
++            if len(data) < 1:
++                no_mail.append(unicode_cn)
++            elif len(data) > 1:
++                duplicated.append(unicode_cn)
++            else:
++                line = "%s <%s>" % (unicode_cn, data[0][1]["mail"][0])
++                line = line.encode("utf-8")
++                print line
++        except:
+             no_mail.append(unicode_cn)
+-        elif len(data) > 1:
+-            duplicated.append(unicode_cn)
+-        else:
+-            line = "%s <%s>" % (unicode_cn, data[0][1]["mail"][0])
+-            line = line.encode("utf-8")
+-            print line
+     if len(no_mail) > 0:
+         print >>stderr, "\nADVERTENCIA: No se pudo encontrar el e-mail de los siguentes estudiantes:"
+         for name in no_mail:
